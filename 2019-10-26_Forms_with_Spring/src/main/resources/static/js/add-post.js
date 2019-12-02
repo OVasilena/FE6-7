@@ -1,78 +1,56 @@
 $(function() {
-
-    const markInputValid = function ($input) {
-        $input.addClass('is-valid');
-        $input.removeClass('is-invalid');
-    };
-
-    const markInputInvalid = function ($input, errorMessage) {
-        $input.addClass('is-invalid');
-        $input.removeClass('is-valid');
-        $input.siblings('.invalid-feedback').html(errorMessage);
-    };
-
-    const markInputPristine = function($input) {
-        $input.removeClass('is-invalid');
-    };
-
-    $('button.btn.btn-primary').on('click',
-        function (event) {
-            event.preventDefault();
-            console.log(event);
-        }
-    );
-
-    const isEmptyValidator = function ($input) {
-        console.log($input.val());
-        if ($input.val().length === 0)
-            return {
-                valid: false,
-                errorMessage: 'This field is required'
-            };
-        return {
-            valid: true
-        };
-    };
-
-    const createIsNotMoreThanValidator = function(maxLength) {
-        return function ($input) {
-            if ($input.val().length > maxLength)
-                return {
-                    valid: false,
-                    errorMessage: "This field can't be more then " + maxLength + " symbols"
-                };
-            return {
-                valid: true
-            };
-        };
-    };
-
     const isNotMoreThan50Validator = createIsNotMoreThanValidator(50);
     const isNotMoreThan4096Validator = createIsNotMoreThanValidator(4096);
 
+    const formId = 'addNewPostForm';
     const addPostForm = {
-        title: [isEmptyValidator, isNotMoreThan50Validator],
-        postBody: [isEmptyValidator, isNotMoreThan4096Validator]
+        id: formId,
+        inputs: {
+            title: [isEmptyValidator, isNotMoreThan50Validator],
+            body: [isEmptyValidator, isNotMoreThan4096Validator]
+        }
     };
 
-    Object.keys(addPostForm).forEach(key => {
-        const $input = $('#' + key);
-        const validators = addPostForm[key];
-        $input.on({
-            focus: function(){
-                markInputPristine($input);
+    validateForm(addPostForm);
+
+    $('form#'+ formId + ' button[type=submit]').on('click',
+        function(event) {
+        event.preventDefault();
+        console.log(event);
+        const formData = $('form#' + formId).serializeArray();
+        console.log(formData);
+
+        $.ajax({
+            url: '/post',
+            type: 'POST',
+            contentType: "application/json",
+            data: JSON.stringify(convertToJson(formData)),
+            success: function(response) {
+                console.log(response);
+                $('form div.alert-success').html(response);
+                $('form div.alert-success').show();
             },
-            blur: function(){
-                for (let validator of validators) {
-                    let error = validator($input);
-                    if (!error.valid) {
-                        markInputInvalid($input, error.errorMessage);
-                        return;
-                    }
-                }
-                markInputValid($input);
+            error: function(error) {
+                $('form div.alert-danger').html(error.responseText);
+                $('form div.alert-danger').show();
             }
         });
     });
+
+    $.ajax({
+        url: '/author',
+        type: 'GET',
+        success: function(response) {
+            let code = '';
+            for(let val of response) {
+                code=code+'<option value=' + val.id + '>' + val.firstName + ' ' + val.lastName + '</option>';
+            }
+            $('form#addNewPostForm select[name=authorId]').html(code);
+        },
+        error: function(error) {
+            console.log(error);
+        }})
+
+
 });
 
