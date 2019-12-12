@@ -10,6 +10,8 @@ import { MainComponent } from './component/main/main.component';
 import { PostPreviewComponent } from './component/post-preview/post-preview.component';
 import { NavigationItemComponent } from './component/navigation-item/navigation-item.component';
 import { AboutComponent } from './component/about/about.component';
+import { PostComponent } from './component/post/post.component';
+import {HttpClientModule} from '@angular/common/http';
 
 @NgModule({
   declarations: [
@@ -20,11 +22,13 @@ import { AboutComponent } from './component/about/about.component';
     MainComponent,
     PostPreviewComponent,
     NavigationItemComponent,
-    AboutComponent
+    AboutComponent,
+    PostComponent
   ],
   imports: [
     BrowserModule,
-    AppRoutingModule
+    AppRoutingModule,
+    HttpClientModule
   ],
   providers: [],
   bootstrap: [AppComponent]
