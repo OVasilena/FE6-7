@@ -25,23 +25,21 @@ public class PostService {
         postEntity.setTitle(postDto.getTitle());
         postEntity.setBody(postDto.getBody());
         postEntity.setDate(postDto.getDate());
-        postEntity.setAuthorEntity(authorRepository.getOne(postDto.getAuthorId()));
+        postEntity.setAuthorEntity(authorRepository.getOne(1L)); // TODO just for cresting first post
         return postRepository.save(postEntity).getId();
     }
 
     public List<PostDto> getAllPosts() {
         return postRepository.findAll()
                 .stream()
-                .map(postEntity ->
-                        {
-                            PostDto postDto = new PostDto();
-                            postDto.setBody(postEntity.getBody());
-                            postDto.setId(postEntity.getId());
-                            postDto.setTitle(postEntity.getTitle());
-                            postDto.setDate(postEntity.getDate());
-                            return postDto;
-                        }
-                )
+                .map(PostDto::new)
                 .collect(Collectors.toList());
+    }
+
+    public PostDto getPost(Long id) {
+        return new PostDto(postRepository.findById(id)
+                .orElseThrow(
+                        () -> new RuntimeException("Post with id=" + id + "not found")
+                ));
     }
 }
